@@ -1,0 +1,3 @@
+# In an upcoming national election for the President of the United States, a pollster plans to predict the winner of the popular vote by taking a random sample of 1000 voters and declaring that the winner will be the one obtaining the most votes in his sample.Suppose that 48% of the voters plan to vote for the Republican candidate, and 52% plan to vote for the Democratic candidate. To get some idea of how reasonable the pollster's plan is, write a program to make this prediction by simulation. Repeat the simulation 100 times and see how many times the pollster's prediction would come true.
+# Repeat the experiment assuming a 49%/51% split. Also try with a sample of 3000 instead of 1000.
+
