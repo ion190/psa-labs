@@ -43,114 +43,93 @@ import json
 from nltk.tokenize import word_tokenize
 from nltk import pos_tag
 from collections import Counter
-from string import punctuation
 import matplotlib.pyplot as plt
 
 def min_max_scaling(value, min_value, max_value):
     return (value - min_value) / (max_value - min_value)
-
-
 def read_json(file_path):
     with open(file_path, 'r', encoding='utf-8') as file:
         data = json.load(file)
     return data
 
-
-tweets=read_json("tweets.json")
+tweets = read_json("tweets.json")
 for i in range(len(tweets)):
-    tweets[i]['words']=word_tokenize(tweets[i]['text'])
+    tweets[i]['words'] = word_tokenize(tweets[i]['text'])
 
 all_words = [word for tweet in tweets for word in tweet['words']]
 
 
-#PROBLEM 4.1
-print("PROBLEM 4.1")
+
+print("Problem 4.1\n10 most frequently used words")
 word_counts = Counter(all_words)
-
-i=0
+i = 0
 for word, count in word_counts.most_common():
-    if word.isalnum():
-        print(f'{i+1}.{word} : {count}')
-        i+=1
-    if i==10:
+    if word.isalnum(): # letters and numbers, excluding words with special characters
+        print(f'{i+1}. {word}: {count}')
+        i += 1
+    if i == 10:
         break
 
-print("\n\nPROBLEM 4.2")
+
+print("\n\nProblem 4.2\n10 most frequently used nouns")
 pos_tags = pos_tag(all_words)
-nouns = [word for word, tag in pos_tags if tag in ['NN','NNS'] and word!='https' and word.isalnum()]
+# 'NN' represents a singular noun, and 'NNS' represents a plural noun
+nouns = [word for word, tag in pos_tags if tag in ['NN','NNS'] and word != 'https' and word.isalnum()]
 nouns_counts = Counter(nouns)
-i=0
+i = 0
 for word, count in nouns_counts.most_common():
-    print(f'{i+1}.{word} : {count}')
-    i+=1
-    if i==10:
+    print(f'{i+1}. {word}: {count}')
+    i += 1
+    if i == 10:
         break
 
-#PROBLEM 4.3
-print("\n\nPROBLEM 4.3")
+
+
+print("\n\nProblem 4.3\n10 most frequently used proper nouns")
 proper_nouns = [word for word, tag in pos_tags if tag in ['NNP', 'NNPS'] and word.isalpha() and word.isalnum()]
 proper_nouns_counts = Counter(proper_nouns)
-i=0
+i = 0
 for word, count in proper_nouns_counts.most_common():
-    print(f'{i+1}.{word} : {count}')
-    i+=1
-    if i==10:
+    print(f'{i+1}. {word}: {count}')
+    i += 1
+    if i == 10:
         break
 
-#PROBLEM 4.4
-print("\n\nPROBLEM 4.4")
-month={i+1:0 for i in range(12)}
-word=str(input("Write the word: "))
 
-for tweet in  tweets:
-    if word in tweet['words']:
-        month[int(tweet['created_at'][5:7])]+=tweet['words'].count(word)
 
-print(month)
-categories = list(month.keys())
-values = list(month.values())
-
-plt.bar(categories, values)
-plt.xlabel('Months')
-plt.ylabel('Frequency')
-plt.title(f"Frequency of the word '{word}'")
-plt.show()
-print(sum(month.values()))
-
-#PROBLEM 4.5
-print("\n\nPROBLEM 4.5")
-popularity=[]
+print("\n\nProblem 4.5\n10 most popular nouns based on the number of likes and retweets")
+popularity = []
 for word in nouns_counts.keys():
-    sum_likes=0
-    sum_retweets=0
+    sum_likes = 0
+    sum_retweets = 0
     for tweet in tweets:
         if word in tweet['words']:
-            sum_likes+=tweet['likes']
-            sum_retweets+=tweet['retweets']
-    popularity.append({"word":word,"likes":sum_likes,"retweets":sum_retweets,"frequency":nouns_counts[word]})
+            sum_likes += tweet['likes']
+            sum_retweets += tweet['retweets']
+    popularity.append({"word": word,"likes": sum_likes,"retweets": sum_retweets,"frequency": nouns_counts[word]})
 max_likes = max(popularity, key=lambda x: x['likes'])
 max_retweets = max(popularity, key=lambda x: x['retweets'])
 min_likes = min(popularity, key=lambda x: x['likes'])
 min_retweets = min(popularity, key=lambda x: x['retweets'])
 
 for i in range(len(popularity)):
-    popularity[i]['normLikes']=min_max_scaling(popularity[i]['likes'],min_likes['likes'],max_likes['likes'])
+    popularity[i]['normLikes'] = min_max_scaling(popularity[i]['likes'],min_likes['likes'],max_likes['likes'])
     popularity[i]['normRetweets'] = min_max_scaling(popularity[i]['retweets'], min_retweets['retweets'], max_retweets['retweets'])
-    popularity[i]['score']= popularity[i]['frequency']*(1.4+popularity[i]['normRetweets'])*(1.2*popularity[i]['normLikes'])
+    popularity[i]['score'] = popularity[i]['frequency']*(1.4+popularity[i]['normRetweets'])*(1.2*popularity[i]['normLikes'])
 
-sorted_popularity=sorted(popularity,key=lambda x: x['score'], reverse=True)
+sorted_popularity = sorted(popularity,key=lambda x: x['score'], reverse=True)
 for i in range(10):
-    print(f"{i+1}.{sorted_popularity[i]['word']} : {sorted_popularity[i]['score']}")
+    print(f"{i+1}. {sorted_popularity[i]['word']}: {sorted_popularity[i]['score']}")
 
 
-#PROGRAM 4.6
-print('\n\nPROBLEM 4.6')
-incomplete_word=input("Type the incomplete word: ")
-suggestion={}
+
+print('\n\nProblem 4.6\ninput an uncompleted word and print 3 word suggestions, based on their frequency')
+incomplete_word = input("Type the incomplete word: ")
+suggestion = {}
 for word in word_counts.keys():
     if word.startswith(incomplete_word):
-        suggestion[word]=word_counts[word]
-sorted_suggestion = sorted(suggestion.items(), key=lambda x: x[1],reverse=True)
+        suggestion[word] = word_counts[word]
+sorted_suggestion = sorted(suggestion.items(), key=lambda x: x[1], reverse=True)
 
 i=0
 for word,count in sorted_suggestion:
@@ -159,8 +138,9 @@ for word,count in sorted_suggestion:
     if i==3:
         break
 
-#PROBLEM 4.7
-print("\n\nPROBLEM 4.7")
+
+
+print("\n\nProblem 4.7\ninput a word and print 3 word suggestions, based on the suggestion occurrences")
 complete_word=input("Write a complete word: ")
 suggestion_word=[]
 for i in range(len(all_words)-1):
@@ -169,3 +149,24 @@ for i in range(len(all_words)-1):
 best_suggestion_word=Counter(suggestion_word).most_common()
 for i in range(3):
     print(f'{best_suggestion_word[i][0]}({best_suggestion_word[i][1]})',end=' ')
+
+
+
+
+print("\n\nProblem 4.4\nfrequency bar chart for given word over 1 month")
+month = {i+1:0 for i in range(12)}
+word = str(input("Input word: "))
+
+for tweet in tweets:
+    if word in tweet['words']:
+        month[int(tweet['created_at'][5:7])]+=tweet['words'].count(word)
+
+keys = list(month.keys())
+values = list(month.values())
+
+plt.bar(keys, values)
+plt.xlabel('Months')
+plt.ylabel('Frequency')
+plt.title(f"Frequency of word '{word}'")
+plt.show()
+print(sum(month.values()))
